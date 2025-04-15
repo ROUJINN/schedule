@@ -36,7 +36,7 @@ def main():
     app.setApplicationName("日程管理与提醒工具")
     
     # 设置应用程序图标（如果有的话）
-    # app.setWindowIcon(QIcon(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'icons/app_icon.png')))
+    app.setWindowIcon(QIcon(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'icons/logo.png')))
     
     # 创建并显示主窗口
     window = MainWindow()
