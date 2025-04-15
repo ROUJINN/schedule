@@ -9,13 +9,14 @@ from PyQt5.QtWidgets import (
     QLabel, QLineEdit, QComboBox, QDateEdit, QTimeEdit, QTextEdit,
     QMessageBox, QTabWidget, QScrollArea, QCalendarWidget, QDialog,
     QGridLayout, QSpinBox, QCheckBox, QTableWidget, QTableWidgetItem,
-    QHeaderView, QSplitter, QFrame, QApplication, QStyle, QMenu, QAction
+    QHeaderView, QSplitter, QFrame, QApplication, QStyle, QMenu, QAction,
+    QInputDialog
 )
 from PyQt5.QtCore import Qt, QDate, QTime, QDateTime, pyqtSlot, QSize
 from PyQt5.QtGui import QIcon, QColor, QPalette, QFont
 
 # 导入项目其他模块
-from schedule import Schedule
+from my_schedule import Schedule
 from reminder import Reminder
 
 class TaskDialog(QDialog):
