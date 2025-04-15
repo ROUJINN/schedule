@@ -16,8 +16,8 @@
 import sys
 import os
 import logging
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtGui import QIcon
+from PySide6.QtWidgets import QApplication
+from PySide6.QtGui import QIcon
 from ui_manager import MainWindow
 
 # 配置日志记录
@@ -43,7 +43,7 @@ def main():
     window.show()
     
     # 启动应用程序事件循环
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
 
 if __name__ == "__main__":
     main()

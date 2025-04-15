@@ -4,16 +4,16 @@
 import os
 import sys
 from datetime import datetime, timedelta
-from PyQt5.QtWidgets import (
+from PySide6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
     QLabel, QLineEdit, QComboBox, QDateEdit, QTimeEdit, QTextEdit,
     QMessageBox, QTabWidget, QScrollArea, QCalendarWidget, QDialog,
     QGridLayout, QSpinBox, QCheckBox, QTableWidget, QTableWidgetItem,
-    QHeaderView, QSplitter, QFrame, QApplication, QStyle, QMenu, QAction,
+    QHeaderView, QSplitter, QFrame, QApplication, QStyle, QMenu,
     QInputDialog
 )
-from PyQt5.QtCore import Qt, QDate, QTime, QDateTime, pyqtSlot, QSize
-from PyQt5.QtGui import QIcon, QColor, QPalette, QFont
+from PySide6.QtCore import Qt, QDate, QTime, QDateTime, Slot, QSize
+from PySide6.QtGui import QIcon, QColor, QPalette, QFont, QAction
 
 # 导入项目其他模块
 from my_schedule import Schedule

@@ -3,10 +3,10 @@
 
 import threading
 import time
-import my_schedule as scheduler
+import schedule # Import the schedule library
 import logging
 from datetime import datetime, timedelta
-from PyQt5.QtCore import QObject, pyqtSignal
+from PySide6.QtCore import QObject, Signal
 
 # 配置日志记录
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -17,7 +17,7 @@ class Reminder(QObject):
     使用QObject作为基类，以支持信号和槽机制
     """
     # 定义一个信号，当有需要提醒的任务时发出
-    reminder_signal = pyqtSignal(dict)
+    reminder_signal = Signal(dict)
     
     def __init__(self, schedule_manager):
         """
@@ -56,17 +56,17 @@ class Reminder(QObject):
     def _reminder_loop(self):
         """提醒线程的主循环"""
         # 每天凌晨重新加载当天的重复任务
-        scheduler.every().day.at("00:00").do(self._schedule_daily_tasks)
+        schedule.every().day.at("00:00").do(self._schedule_daily_tasks)
         
         # 每分钟检查一次是否有需要提醒的任务
-        scheduler.every().minute.do(self._check_reminders)
+        schedule.every().minute.do(self._check_reminders)
         
         # 初始加载当天任务
         self._schedule_daily_tasks()
         
         # 主循环
         while self.running:
-            scheduler.run_pending()
+            schedule.run_pending()
             time.sleep(1)  # 休眠1秒以减少CPU使用率
     
     def _schedule_daily_tasks(self):
