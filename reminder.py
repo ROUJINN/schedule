@@ -3,7 +3,7 @@
 
 import threading
 import time
-import schedule as scheduler
+import my_schedule as scheduler
 import logging
 from datetime import datetime, timedelta
 from PyQt5.QtCore import QObject, pyqtSignal
