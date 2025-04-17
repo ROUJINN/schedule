@@ -426,7 +426,7 @@ class MainWindow(QMainWindow):
         self.status_filter.addItems(["全部", "未完成", "已完成"])
         filter_layout.addWidget(self.status_filter)
         
-        self.apply_filter_btn = QPushButton("应用过滤")
+        self.apply_filter_btn = QPushButton("筛选")
         self.apply_filter_btn.clicked.connect(self.apply_filters)
         filter_layout.addWidget(self.apply_filter_btn)
         
