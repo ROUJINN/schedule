@@ -49,7 +49,7 @@ class TaskDialog(QDialog):
         form_layout = QGridLayout()
         
         # 标题
-        self.title_label = QLabel("标题:")
+        self.title_label = QLabel("任务:")
         self.title_input = QLineEdit()
         form_layout.addWidget(self.title_label, 0, 0)
         form_layout.addWidget(self.title_input, 0, 1)
@@ -210,7 +210,7 @@ class TaskTableWidget(QTableWidget):
         """初始化表格界面"""
         # 设置列数和列标题
         self.setColumnCount(6)
-        self.setHorizontalHeaderLabels(["标题", "类别", "优先级", "日期", "时间", "状态"])
+        self.setHorizontalHeaderLabels(["任务", "类别", "优先级", "日期", "时间", "状态"])
         
         # 设置表格属性
         self.setAlternatingRowColors(True)
@@ -475,7 +475,7 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(f"当前显示 {len(tasks)} 个任务")
     
     def apply_filters(self):
-        """应用过滤条件"""
+        """筛选条件"""
         self.update_task_list()
     
     def add_task(self):
