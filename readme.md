@@ -11,9 +11,7 @@ pip install schedule
 
 ### 如何通过git合作?
 
-<div style="text-align: center; border: 1px solid black; padding: 10px; font-weight: bold;">
-    注意: 每次开始写代码前先要git pull
-</div>
+**注意: 每次开始修改代码前先git pull**
 
 目前只用一个branch就是main, 我们自己都在main上面改. 如果自己在修改的过程中, 远程的main发生了更新, 那么操作是: 先git stash,再git pull, 再git stash apply, 参考下面的命令.
 ```
