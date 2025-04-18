@@ -378,7 +378,7 @@ class MainWindow(QMainWindow):
         # 创建选项卡
         self.tabs = QTabWidget()
         
-        # 添加选项卡内容
+        # 添加选项卡内容, 这是最上面的任务列表和日历视图
         self.add_task_tab()
         self.add_calendar_tab()
         

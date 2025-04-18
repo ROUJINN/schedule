@@ -16,7 +16,7 @@ class Reminder(QObject):
     提醒功能类：负责任务的定时提醒
     使用QObject作为基类，以支持信号和槽机制
     """
-    # 定义一个信号，当有需要提醒的任务时发出
+    # 自定义一个信号，当有需要提醒的任务时发出
     reminder_signal = Signal(dict)
     
     def __init__(self, schedule_manager):
@@ -55,6 +55,9 @@ class Reminder(QObject):
     
     def _reminder_loop(self):
         """提醒线程的主循环"""
+        # every()方法用于注册定时任务
+        # run_pending()检查当前是否有已经到执行时间的任务，如果有，就立即执行这些任务。
+        
         # 每天凌晨重新加载当天的重复任务
         schedule.every().day.at("00:00").do(self._schedule_daily_tasks)
         

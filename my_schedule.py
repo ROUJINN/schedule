@@ -33,7 +33,7 @@ class Schedule:
         Args:
             data_file: JSON 数据文件的路径
         """
-        self.data_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), data_file)
+        self.data_file = data_file
         self.tasks = []
         self._load_tasks()
     
