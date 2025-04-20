@@ -291,13 +291,17 @@ class CalendarViewWidget(QWidget):
         main_layout = QVBoxLayout()
         
         # 日历控件
+        
         self.calendar = QCalendarWidget()
+        font = QFont("Roboto", 12)
+        self.calendar.setFont(font)
+        self.calendar.setStyleSheet(""" """)
         self.calendar.setGridVisible(True)
         self.calendar.setVerticalHeaderFormat(QCalendarWidget.NoVerticalHeader)
-        self.calendar.setMinimumHeight(300)
+        self.calendar.setMinimumHeight(400) #日历格子大小
         
         self.calendar.selectionChanged.connect(self.on_date_selected)
-        
+
         # 当日任务列表
         self.task_label = QLabel("任务清单")
         self.task_label.setAlignment(Qt.AlignCenter)
@@ -368,7 +372,7 @@ class MainWindow(QMainWindow):
         """初始化用户界面"""
         # 设置窗口属性
         self.setWindowTitle("日程管理与提醒工具")
-        self.setMinimumSize(800, 600)
+        self.setMinimumSize(1000, 800) # 窗口大小
         
         # 主布局容器
         self.central_widget = QWidget()
