@@ -8,6 +8,10 @@ pip install pyside6
 ```
 pip install schedule
 ```
+需要安装导出Excel所需的库
+```
+pip install pandas openpyxl
+```
 
 ### 如何通过git合作?
 
