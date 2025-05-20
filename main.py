@@ -19,6 +19,7 @@ import logging
 from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QIcon
 from ui_manager import MainWindow
+from pet_engine import PetState, DesktopPet
 
 # 配置日志记录
 logging.basicConfig(
@@ -34,12 +35,15 @@ def main():
     """程序主入口"""
     app = QApplication(sys.argv)
     app.setApplicationName("日程管理与提醒工具")
+
+    # 初始化宠物系统
+    pet_state = PetState()
     
     # 设置应用程序图标
     app.setWindowIcon(QIcon('icons/logo.png'))
     
     # 创建并显示主窗口
-    window = MainWindow()
+    window = MainWindow(pet_state)
     window.show()
     
     # 启动应用程序事件循环

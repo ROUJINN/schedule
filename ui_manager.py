@@ -20,6 +20,7 @@ from PySide6.QtGui import QIcon, QColor, QPalette, QFont, QAction, QPainter, QPe
 # 导入项目其他模块
 from my_schedule import Schedule
 from reminder import Reminder
+from pet_engine import PetState, DesktopPet
 
 # 导入Excel导出相关库
 import pandas as pd
@@ -1208,9 +1209,14 @@ class ExcelExporter:
 class MainWindow(QMainWindow):
     """主窗口"""
     
-    def __init__(self):
+    def __init__(self, pet_state):
         super().__init__()
-        
+
+        # 初始化宠物状态连接    
+        self.pet_state = pet_state
+        self.pet = DesktopPet(self.pet_state)
+        self.init_pet_connection()
+
         # 初始化数据模型和提醒系统
         self.schedule_manager = Schedule()
         self.reminder = Reminder(self.schedule_manager)
@@ -1480,8 +1486,21 @@ class MainWindow(QMainWindow):
         if not task:
             return
         
-        # 切换完成状态
-        self.schedule_manager.mark_completed(task_id, not task["completed"])
+        new_status = not task["completed"]
+    
+        # 更新任务状态
+        if self.schedule_manager.mark_completed(task_id, new_status):
+            # 更新宠物状态
+            if new_status:
+                # 完成任务奖励
+                self.pet_state.hp = min(100, self.pet_state.hp + 10)
+                self.pet_state.food = min(100, self.pet_state.food + 15)
+                self.pet_state.mood = "happy"
+            else:
+                # 取消完成惩罚
+                self.pet_state.hp = max(0, self.pet_state.hp - 5)
+                self.pet_state.food = max(0, self.pet_state.food - 5)
+                self.pet_state.mood = "angry"
 
         self.update_all_views()
     
@@ -1582,15 +1601,22 @@ class MainWindow(QMainWindow):
             logging.error(f"更新视图时出错: {e}")
             self.statusBar().showMessage(f"更新视图时出错: {e}")
 
-# 主函数入口
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    
-    # 设置全局样式
-    app.setStyle("Fusion")
-    
-    # 创建应用实例
-    window = MainWindow()
-    
-    # 执行应用
-    sys.exit(app.exec())
+    def init_pet_connection(self):
+        # 连接状态变化信号
+        self.pet_state.hp_changed.connect(self.update_pet_status)
+        self.pet_state.mood_changed.connect(self.update_pet_animation)
+
+    def update_pet_status(self, hp):
+        if hp < 20:
+            self.show_warning("宠物快饿死了！快去完成任务！")
+
+    def update_pet_animation(self, mood):
+        # 根据心情切换动画
+        mood_animation_map = {
+            "happy": "pet/happy.gif",
+            "angry": "pet/angry.gif",
+            "normal": "pet/default.gif"
+        }
+        self.pet.movie.setFileName(mood_animation_map[mood])
+        self.pet.movie.start()
+        self.pet.update()  # 强制刷新界面
