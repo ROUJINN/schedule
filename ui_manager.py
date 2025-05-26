@@ -26,6 +26,7 @@ from pet_engine import PetState, DesktopPet
 import pandas as pd
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
+import json
 
 class CustomCalendarWidget(QCalendarWidget):
     """自定义日历控件，支持高亮有任务的日期"""
@@ -1206,6 +1207,77 @@ class ExcelExporter:
             return False
 
 
+class SettingsDialog(QDialog):
+    """设置对话框"""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("设置")
+        self.setMinimumWidth(400)
+        self.init_ui()
+
+    def init_ui(self):
+        """初始化界面"""
+        layout = QVBoxLayout()
+
+        # 学号
+        self.student_id_label = QLabel("学号:")
+        self.student_id_input = QLineEdit()
+        layout.addWidget(self.student_id_label)
+        layout.addWidget(self.student_id_input)
+
+        # 密码
+        self.password_label = QLabel("密码:")
+        self.password_input = QLineEdit()
+        self.password_input.setEchoMode(QLineEdit.Password)  # 隐藏密码输入
+        layout.addWidget(self.password_label)
+        layout.addWidget(self.password_input)
+
+        # Chrome 地址
+        self.chrome_path_label = QLabel("Chrome地址:")
+        self.chrome_path_input = QLineEdit()
+        layout.addWidget(self.chrome_path_label)
+        layout.addWidget(self.chrome_path_input)
+
+        # 按钮
+        button_layout = QHBoxLayout()
+        self.save_btn = QPushButton("保存")
+        self.cancel_btn = QPushButton("取消")
+        button_layout.addWidget(self.save_btn)
+        button_layout.addWidget(self.cancel_btn)
+
+        layout.addLayout(button_layout)
+        self.setLayout(layout)
+
+        # 连接信号
+        self.save_btn.clicked.connect(self.save_settings)
+        self.cancel_btn.clicked.connect(self.reject)
+
+        # 加载现有配置
+        self.load_settings()
+
+    def load_settings(self):
+        """加载配置文件"""
+        config_path = "config.json"
+        if os.path.exists(config_path):
+            with open(config_path, "r", encoding="utf-8") as f:
+                config = json.load(f)
+                self.student_id_input.setText(config.get("student_id", ""))
+                self.password_input.setText(config.get("password", ""))
+                self.chrome_path_input.setText(config.get("chrome_path", ""))
+
+    def save_settings(self):
+        """保存配置到文件"""
+        config = {
+            "student_id": self.student_id_input.text(),
+            "password": self.password_input.text(),
+            "chrome_path": self.chrome_path_input.text(),
+        }
+        with open("config.json", "w", encoding="utf-8") as f:
+            json.dump(config, f, ensure_ascii=False, indent=4)
+        self.accept()
+
+
 class MainWindow(QMainWindow):
     """主窗口"""
     
@@ -1252,28 +1324,43 @@ class MainWindow(QMainWindow):
         
         # 创建底部按钮栏
         button_layout = QHBoxLayout()
-        
+
         self.add_task_btn = QPushButton("添加任务")
         self.add_task_btn.clicked.connect(self.add_task)
-        
+
         self.export_btn = QPushButton("导出到Excel")
         self.export_btn.clicked.connect(self.export_to_excel)
-        
+
+        self.import_web_btn = QPushButton("从网页导入任务")
+        self.import_web_btn.clicked.connect(self.import_from_web)
+
+        self.settings_btn = QPushButton("设置")  # 新增“设置”按钮
+        self.settings_btn.clicked.connect(self.open_settings_dialog)
+
         # 添加到布局
         button_layout.addWidget(self.add_task_btn)
         button_layout.addWidget(self.export_btn)
+        button_layout.addWidget(self.import_web_btn)
+        button_layout.addWidget(self.settings_btn)  # 添加“设置”按钮
         button_layout.addStretch()
-        
+
         # 添加到主布局
         main_layout.addWidget(self.tabs)
         main_layout.addLayout(button_layout)
-        
+
         # 状态栏
         self.statusBar().showMessage("日程管理与提醒工具已启动")
         
         # 显示窗口
         self.show()
     
+    def open_settings_dialog(self):
+        """打开设置对话框"""
+        dialog = SettingsDialog(self)
+        result = dialog.exec_()
+        if result == QDialog.Accepted:
+            QMessageBox.information(self, "成功", "设置已保存")
+
     def add_task_tab(self):
         """添加任务列表选项卡"""
         task_tab = QWidget()
@@ -1620,3 +1707,12 @@ class MainWindow(QMainWindow):
         self.pet.movie.setFileName(mood_animation_map[mood])
         self.pet.movie.start()
         self.pet.update()  # 强制刷新界面
+
+    def import_from_web(self):
+        """
+        从网页导入任务
+        """
+        base_url= "教学网"
+        self.schedule_manager.import_from_web(base_url)
+        self.update_all_views()
+        QMessageBox.information(self, "成功", "任务已从网页导入")

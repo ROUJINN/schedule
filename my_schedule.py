@@ -6,6 +6,8 @@ import os
 import uuid
 from datetime import datetime, timedelta
 import logging
+from SCRAPER import WebScraper  # 导入爬取模块
+import asyncio
 
 # 配置日志记录
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -304,6 +306,33 @@ class Schedule:
                 logging.error(f"计算提醒时间出错: {e}")
         
         return reminder_tasks
+    
+    def import_from_web(self, base_url):
+        """
+        从网页导入任务
+        Args:
+            base_url: 网页URL，可能默认为教学网
+        """
+        base_url = "https://course.pku.edu.cn/webapps/login/"
+        asyncio.run(WebScraper(base_url))
+        #scraper = WebScraper(base_url)
+        print("scraped")
+        
+        
+        '''
+        fetch_assignments()待填充
+        assignments = scraper.fetch_assignments()
+
+        for assignment in assignments:
+            self.add_task(
+                title=assignment['title'],
+                description="从网页导入的任务",
+                category=self.STUDY,
+                priority=self.MEDIUM,
+                due_date=assignment['due_date']
+            )
+        logging.info(f"从网页导入了 {len(assignments)} 个任务")
+        '''
 
 
 if __name__ == "__main__":
