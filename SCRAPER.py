@@ -180,4 +180,3 @@ async def WebScraper(loginUrl):
 def main():
     url = "https://course.pku.edu.cn/webapps/login/"
     asyncio.run(WebScraper(url))   
-main()
