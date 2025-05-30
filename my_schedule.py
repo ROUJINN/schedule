@@ -313,26 +313,42 @@ class Schedule:
         Args:
             base_url: 网页URL，可能默认为教学网
         """
-        base_url = "https://course.pku.edu.cn/webapps/login/"
-        asyncio.run(WebScraper(base_url))
+        base_url = "https://course.pku.edu.cn/webapps/bb-sso-BBLEARN/login.html"
+        assignments = asyncio.run(WebScraper(base_url))
         #scraper = WebScraper(base_url)
         print("scraped")
+        logging.info(f"从网页导入了 {len(assignments)} 个任务")
         
-        
-        '''
-        fetch_assignments()待填充
-        assignments = scraper.fetch_assignments()
-
         for assignment in assignments:
+            due_date = assignment.get("due_date")
+            if due_date and due_date.strip():
+                try:
+                    from dateutil.parser import parse
+                    parsed_date = parse(due_date, fuzzy=True)
+                    due_date = parsed_date.strftime("%Y-%m-%d")
+                except Exception as e:
+                    logging.error(f"截止日期无法解析: {due_date}, 错误: {e}")
+                    due_date = datetime.now().strftime("%Y-%m-%d")
+            else:
+                due_date = datetime.now().strftime("%Y-%m-%d")
+            
+            # 检查截止日期是否已经过去
+            if datetime.strptime(due_date, "%Y-%m-%d").date() < datetime.now().date():
+                logging.info(f"任务'{assignment['title']}'截止日期 {due_date} 已经过期，将跳过该任务")
+                continue
+
+            course_name = assignment.get("course_name", "未知课程")
+            link_text = f" 链接: {assignment['link']}" if assignment.get("link") else ""
+            description = f"从网页导入的任务，所属课程: {course_name}{link_text}"
+            
             self.add_task(
                 title=assignment['title'],
-                description="从网页导入的任务",
+                description=description,
                 category=self.STUDY,
                 priority=self.MEDIUM,
-                due_date=assignment['due_date']
+                due_date=due_date
             )
-        logging.info(f"从网页导入了 {len(assignments)} 个任务")
-        '''
+
 
 
 if __name__ == "__main__":
