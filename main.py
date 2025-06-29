@@ -44,11 +44,15 @@ def main():
     
     # 设置应用程序图标
     app.setWindowIcon(QIcon('icons/logo.png'))
-    
-    # 创建并显示主窗口
-    window = MainWindow(pet_state)
+
+    # 只创建一个pet实例
+    pet = DesktopPet(pet_state)
+    pet.show()
+
+    # 把pet实例传给主窗口
+    window = MainWindow(pet_state, pet)
     window.show()
-    
+
     # 启动应用程序事件循环
     sys.exit(app.exec())
 

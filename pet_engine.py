@@ -1,10 +1,10 @@
 # pet_engine.py
-import json
-import os
 from PySide6.QtCore import Qt, QPoint, QTimer, QSize, Property, Signal, QObject
 from PySide6.QtGui import QMovie, QPainter, QColor, QIcon
 from PySide6.QtWidgets import (QWidget, QMenu, QSystemTrayIcon, 
                               QGraphicsOpacityEffect, QApplication)
+import os
+import json
 
 class PetState(QObject):
     """宠物状态管理"""
@@ -80,6 +80,15 @@ class DesktopPet(QWidget):
         self.init_pet()
         self.init_tray()
         self.init_hp_timer()
+        # --- 新增：心情与动画管理 ---
+        self.last_active_timer = QTimer()
+        self.last_active_timer.setInterval(3 * 3600 * 1000)  # 3小时
+        self.last_active_timer.timeout.connect(self.set_sleep)
+        self.last_active_timer.start()
+        self.is_sleeping = False
+        self.installEventFilter(self)
+        self.update_pet_animation()
+        self.state.hp_changed.connect(self.update_pet_animation)
 
     def init_pet(self):
         # 窗口设置
@@ -88,7 +97,7 @@ class DesktopPet(QWidget):
         self.setFixedSize(200, 200)
 
         # 宠物动画
-        self.movie = QMovie("pet/default.gif")
+        self.movie = QMovie("pet/happy.gif")
         self.movie.frameChanged.connect(self.update)
         self.movie.start()
 
@@ -106,7 +115,7 @@ class DesktopPet(QWidget):
         show_action = menu.addAction("显示宠物")
         show_action.triggered.connect(self.show_normal)
         menu.addSeparator()
-        exit_action = menu.addAction("退出")
+        exit_action = menu.addAction("退出程序")
         exit_action.triggered.connect(QApplication.quit)
         
         self.tray.setContextMenu(menu)
@@ -119,16 +128,34 @@ class DesktopPet(QWidget):
         self.hp_timer.start(3600000)  # 1小时
 
     def auto_decrease_hp(self):
-        self.state.hp = max(0, self.state.hp - 5)
+        if self.state.hp > 5:
+            self.state.hp = max(5, self.state.hp - 5)
 
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
-        
-        # 绘制HP条
-        painter.setBrush(QColor(255, 0, 0, 100))
-        painter.drawRect(10, 10, 180 * (self.state.hp / 100), 8)
-        
+
+        # --- HP条居中 ---
+        bar_width = 200
+        bar_height = 8
+        bar_x = (self.width() - bar_width) // 2
+        bar_y = 10
+
+        # --- HP条颜色 ---
+        hp = self.state.hp
+        if hp > 60:
+            color = QColor(0, 200, 0, 180)      # 绿色
+        elif hp > 30:
+            color = QColor(255, 200, 0, 180)    # 黄色
+        elif hp > 5:
+            color = QColor(255, 0, 0, 180)      # 红色
+        else:
+            color = QColor(120, 0, 0, 220)      # 深红色
+
+        painter.setBrush(color)
+        painter.setPen(Qt.NoPen)
+        painter.drawRect(10,10, int(bar_width * (hp / 100)), 8)
+
         # 绘制宠物动画
         if self.movie.state() == QMovie.Running:
             current = self.movie.currentPixmap()
@@ -138,6 +165,8 @@ class DesktopPet(QWidget):
         if event.button() == Qt.LeftButton:
             self.drag_pos = event.globalPosition().toPoint() - self.frameGeometry().topLeft()
             self.setCursor(Qt.ClosedHandCursor)
+        elif event.button() == Qt.RightButton:
+            self.hide()  # 右键隐藏到托盘
 
     def mouseMoveEvent(self, event):
         if event.buttons() == Qt.LeftButton:
@@ -153,3 +182,33 @@ class DesktopPet(QWidget):
     def show_normal(self):
         self.show()
         self.setWindowState(Qt.WindowNoState)
+
+    # --- 新增：心情与动画切换 ---
+    def update_pet_animation(self):
+        if self.is_sleeping:
+            self.set_movie("pet/sleep.gif")
+        elif self.state.hp > 60:
+            self.set_movie("pet/happy.gif")
+        else:
+            self.set_movie("pet/angry.gif")
+
+    def set_movie(self, path):
+        if self.movie.fileName() != path:
+            self.movie.stop()
+            self.movie.setFileName(path)
+            self.movie.start()
+
+    def set_sleep(self):
+        self.is_sleeping = True
+        self.update_pet_animation()
+
+    def eventFilter(self, obj, event):
+        # 只要有用户操作就重置计时器
+        if event.type() in (
+            2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 17, 18, 24, 25, 31
+        ):  # 常见事件类型
+            self.last_active_timer.start()
+            if self.is_sleeping:
+                self.is_sleeping = False
+                self.update_pet_animation()
+        return super().eventFilter(obj, event)

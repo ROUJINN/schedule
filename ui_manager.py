@@ -1281,12 +1281,12 @@ class SettingsDialog(QDialog):
 class MainWindow(QMainWindow):
     """主窗口"""
     
-    def __init__(self, pet_state):
-        super().__init__()
+    def __init__(self, pet_state, pet, parent=None):
+        super().__init__(parent)
 
         # 初始化宠物状态连接    
         self.pet_state = pet_state
-        self.pet = DesktopPet(self.pet_state)
+        self.pet = pet
         self.init_pet_connection()
 
         # 初始化数据模型和提醒系统
