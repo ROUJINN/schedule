@@ -1283,7 +1283,7 @@ class MainWindow(QMainWindow):
     
     def __init__(self, pet_state, pet, parent=None):
         super().__init__(parent)
-
+        self.setObjectName("MainWindow")
         # 初始化宠物状态连接    
         self.pet_state = pet_state
         self.pet = pet
@@ -1656,9 +1656,12 @@ class MainWindow(QMainWindow):
     
     def closeEvent(self, event):
         """关闭窗口时的处理"""
-        # 停止提醒线程
-        self.reminder.stop()
-        event.accept()
+        # 如果是用户点击关闭按钮，则只隐藏
+        if QApplication.instance().closingDown():
+            event.accept()
+        else:
+            self.hide()
+            event.ignore()
 
     def update_all_views(self):
         """更新所有视图

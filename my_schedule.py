@@ -28,7 +28,7 @@ class Schedule:
     MEDIUM = "中"
     LOW = "低"
     
-    def __init__(self, data_file="data/tasks.json"):
+    def __init__(self, data_file="data/tasks.json", pet_state=None):
         """
         初始化日程管理器
         
@@ -37,6 +37,7 @@ class Schedule:
         """
         self.data_file = data_file
         self.tasks = []
+        self.pet_state = pet_state  # 新增
         self._load_tasks()
     
     def _load_tasks(self):
@@ -265,7 +266,10 @@ class Schedule:
         Returns:
             bool: 操作是否成功
         """
-        return self.update_task(task_id, completed=completed)
+        result = self.update_task(task_id, completed=completed)
+        if result and completed and self.pet_state:
+            self.pet_state.increase_hp(10)
+        return result
     
     def get_upcoming_reminders(self, minutes=30):
         """
@@ -348,6 +352,27 @@ class Schedule:
                 priority=self.MEDIUM,
                 due_date=due_date
             )
+    
+    def check_overdue_tasks(self):
+        """检测逾期未完成的任务，并减少宠物HP"""
+        now = datetime.now()
+        changed = False
+        for task in self.tasks:
+            if not task.get("completed", False):
+                due_str = task.get("due_date")
+                if due_str:
+                    try:
+                        due_date = datetime.strptime(due_str, "%Y-%m-%d")
+                        if due_date < now.date():
+                            if not task.get("overdue_penalized", False):
+                                if self.pet_state:
+                                    self.pet_state.hp = max(5, self.pet_state.hp - 15)
+                                task["overdue_penalized"] = True
+                                changed = True
+                    except Exception as e:
+                        pass
+        if changed:
+            self._save_tasks()
 
 
 

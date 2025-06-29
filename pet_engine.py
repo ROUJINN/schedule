@@ -6,6 +6,10 @@ from PySide6.QtWidgets import (QWidget, QMenu, QSystemTrayIcon,
 import os
 import json
 
+
+#TODO:换图标,增加sleep.gif
+T = 60 #几分钟自动减少hp
+
 class PetState(QObject):
     """宠物状态管理"""
     hp_changed = Signal(int)
@@ -125,12 +129,15 @@ class DesktopPet(QWidget):
         # 每小时自动减少HP
         self.hp_timer = QTimer()
         self.hp_timer.timeout.connect(self.auto_decrease_hp)
-        self.hp_timer.start(3600000)  # 1小时
+        self.hp_timer.start(1000*T)  # 每分钟,可以修改T
 
     def auto_decrease_hp(self):
         if self.state.hp > 5:
             self.state.hp = max(5, self.state.hp - 5)
-
+    def increase_hp(self, amount):
+        self.hp = min(100, self.hp + amount)
+        
+        
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
@@ -166,7 +173,23 @@ class DesktopPet(QWidget):
             self.drag_pos = event.globalPosition().toPoint() - self.frameGeometry().topLeft()
             self.setCursor(Qt.ClosedHandCursor)
         elif event.button() == Qt.RightButton:
-            self.hide()  # 右键隐藏到托盘
+            menu = QMenu(self)
+            action_hide = menu.addAction("隐藏到托盘")
+            action_hide.triggered.connect(self.hide)
+            action_show = menu.addAction("显示主窗口")
+            action_show.triggered.connect(self.show_main_window)
+            menu.addSeparator()
+            action_exit = menu.addAction("退出程序")
+            action_exit.triggered.connect(QApplication.quit)
+            menu.exec(event.globalPosition().toPoint())
+
+    def show_main_window(self):
+        for widget in QApplication.topLevelWidgets():
+            if widget.objectName() == "MainWindow":
+                widget.showNormal()
+                widget.raise_()
+                widget.activateWindow()
+                break
 
     def mouseMoveEvent(self, event):
         if event.buttons() == Qt.LeftButton:

@@ -23,6 +23,7 @@ from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QIcon
 from ui_manager import MainWindow
 from pet_engine import PetState, DesktopPet
+from my_schedule import Schedule
 
 # 配置日志记录
 logging.basicConfig(
@@ -41,7 +42,9 @@ def main():
 
     # 初始化宠物系统
     pet_state = PetState()
-    
+    schedule = Schedule(pet_state=pet_state)
+    schedule.check_overdue_tasks()
+
     # 设置应用程序图标
     app.setWindowIcon(QIcon('icons/logo.png'))
 
