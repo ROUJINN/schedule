@@ -1,12 +1,12 @@
 import asyncio
 import pyppeteer as pyp
 from datetime import datetime
-import json #config.json
+import json
 import os
 import re
 import atexit
 
-browser = None  # 全局浏览器对象
+browser = None
 
 async def antiAntiCrawler(page):
     await page.setUserAgent('Mozilla/5.0 (Windows NT 6.1; Win64; x64) '
@@ -46,7 +46,6 @@ async def parse_item(browser, item, assignments, depth=1, course_name=None):
     
     elif "项目" in icon_alt or "文件" in icon_alt or "作业" in icon_alt:
         print(f"{indent}{title_text}")
-        # 把课程名称加入任务数据中
         homework = {
             "title": title_text,
             "due_date": None,
@@ -75,7 +74,6 @@ async def parse_item(browser, item, assignments, depth=1, course_name=None):
     
     
 async def WebScraper(loginUrl):
-    # 加载配置
     config_path = "config.json"
     if not os.path.exists(config_path):
         print("未找到配置文件，请先设置学号、密码和Chrome地址")
@@ -101,7 +99,6 @@ async def WebScraper(loginUrl):
     await page.goto(loginUrl, waitUntil="networkidle2")
     await asyncio.sleep(2)
 
-    # 登录
     await (await page.querySelector("#user_name")).type(student_id)
     await (await page.querySelector("#password")).type(password)
     await asyncio.gather(
@@ -109,11 +106,10 @@ async def WebScraper(loginUrl):
         (await page.querySelector("#logon_button")).click()
     )
 
-    # 获取课程列表
     await page.waitForSelector("ul.portletList-img.courseListing.coursefakeclass > li > a", timeout=30000)
     course_links = await page.querySelectorAll("ul.portletList-img.courseListing.coursefakeclass > li > a")
     
-    assignments = []  # 新建任务列表
+    assignments = []
 
     for i, course_link_elem in enumerate(course_links):
         course_page = None
@@ -124,13 +120,11 @@ async def WebScraper(loginUrl):
             if not re.search(r"24-25学年第\s*2\s*学期", full_course_name):
                 continue
             
-            # 提取中间部分，例如以冒号分割后取后半部分，再去掉括号里的内容
             parts = full_course_name.split(":")
             if len(parts) >= 2:
                 course_name_raw = parts[1]
             else:
                 course_name_raw = full_course_name
-            # 去掉括号及其中的内容
             course_name = re.sub(r"\(.*\)", "", course_name_raw).strip()
             
             course_page = await browser.newPage()
@@ -163,7 +157,6 @@ async def WebScraper(loginUrl):
                 await course_page.close()
                 continue
 
-            # 查找作业列表，传入 assignments 列表，并传入课程名称
             items = await course_page.querySelectorAll("ul.contentList > li")
             for item in items:
                 await parse_item(browser, item, assignments, course_name=course_name)

@@ -1,4 +1,3 @@
-# pet_engine.py
 from PySide6.QtCore import Qt, QPoint, QTimer, QSize, Property, Signal, QObject
 from PySide6.QtGui import QMovie, QPainter, QColor, QIcon
 from PySide6.QtWidgets import (QWidget, QMenu, QSystemTrayIcon, 
@@ -7,10 +6,9 @@ import os
 import json
 
 
-T = 5 #几秒钟自动减少hp,可修改
+T = 5
 
 class PetState(QObject):
-    """宠物状态管理"""
     hp_changed = Signal(int)
     mood_changed = Signal(str)
 
@@ -83,7 +81,6 @@ class DesktopPet(QWidget):
         self.init_pet()
         self.init_tray()
         self.init_hp_timer()
-        # --- 新增：心情与动画管理 ---
         self.last_active_timer = QTimer()
         self.last_active_timer.setInterval(3 * 3600 * 1000)  # 3小时
         self.last_active_timer.timeout.connect(self.set_sleep)
@@ -94,22 +91,18 @@ class DesktopPet(QWidget):
         self.state.hp_changed.connect(self.update_pet_animation)
 
     def init_pet(self):
-        # 窗口设置
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setFixedSize(200, 200)
 
-        # 宠物动画
         self.movie = QMovie("pet/happy.gif")
         self.movie.frameChanged.connect(self.update)
         self.movie.start()
 
-        # 拖拽相关
         self.drag_pos = QPoint()
         self.setCursor(Qt.OpenHandCursor)
 
     def init_tray(self):
-        # 系统托盘
         self.tray = QSystemTrayIcon(self)
         self.tray.setIcon(QIcon("pet/tray_icon.png"))
         self.tray.activated.connect(self.toggle_visibility)
@@ -125,7 +118,6 @@ class DesktopPet(QWidget):
         self.tray.show()
 
     def init_hp_timer(self):
-        # 每小时自动减少HP
         self.hp_timer = QTimer()
         self.hp_timer.timeout.connect(self.auto_decrease_hp)
         self.hp_timer.start(1000*T)  # 每分钟,可以修改T
@@ -141,13 +133,11 @@ class DesktopPet(QWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
 
-        # --- HP条居中并短一点 ---
         bar_width = 120
         bar_height = 8
         bar_x = (self.width() - bar_width) // 2
-        bar_y = 20  # 适当下移，或根据宠物y调整
+        bar_y = 20
 
-        # --- HP条颜色 ---
         hp = self.state.hp
         if hp > 60:
             color = QColor(0, 200, 0, 180)      # 绿色
@@ -162,12 +152,10 @@ class DesktopPet(QWidget):
         painter.setPen(Qt.NoPen)
         painter.drawRect(bar_x, bar_y, int(bar_width * (hp / 100)), bar_height)
 
-        # 给HP条加一个灰色边框
         painter.setBrush(Qt.NoBrush)
         painter.setPen(QColor(80, 80, 80, 200))  # 灰色，带透明度
         painter.drawRect(bar_x, bar_y, bar_width, bar_height)
 
-        # 绘制更大的宠物动画
         if self.movie.state() == QMovie.Running:
             current = self.movie.currentPixmap()
             pet_width, pet_height = 240, 220
@@ -213,7 +201,6 @@ class DesktopPet(QWidget):
         self.show()
         self.setWindowState(Qt.WindowNoState)
 
-    # --- 新增：心情与动画切换 ---
     def update_pet_animation(self):
         if self.is_sleeping or self.state.hp > 80:
             self.set_movie("pet/sleep.gif")
@@ -233,10 +220,9 @@ class DesktopPet(QWidget):
         self.update_pet_animation()
 
     def eventFilter(self, obj, event):
-        # 只要有用户操作就重置计时器
         if event.type() in (
             2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 17, 18, 24, 25, 31
-        ):  # 常见事件类型
+        ):
             self.last_active_timer.start()
             if self.is_sleeping:
                 self.is_sleeping = False
