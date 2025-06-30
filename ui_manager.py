@@ -1307,7 +1307,17 @@ class MainWindow(QMainWindow):
         # 设置窗口属性
         self.setWindowTitle("日程管理与提醒工具")
         self.setMinimumSize(900, 650) # 窗口大小
-        
+
+        # 设置背景图片（假设图片在项目根目录下的 images/bg.jpg）
+        self.setStyleSheet("""
+            QMainWindow {
+                background-image: url(background.jpg);
+                background-repeat: no-repeat;
+                background-position: center;
+                background-attachment: fixed;
+            }
+        """)
+
         # 主布局容器
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)

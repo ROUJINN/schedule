@@ -7,8 +7,7 @@ import os
 import json
 
 
-#TODO:换图标,增加sleep.gif
-T = 60 #几分钟自动减少hp
+T = 5 #几秒钟自动减少hp,可修改
 
 class PetState(QObject):
     """宠物状态管理"""
@@ -132,8 +131,8 @@ class DesktopPet(QWidget):
         self.hp_timer.start(1000*T)  # 每分钟,可以修改T
 
     def auto_decrease_hp(self):
-        if self.state.hp > 5:
-            self.state.hp = max(5, self.state.hp - 5)
+        if self.state.hp > 1:
+            self.state.hp = max(1, self.state.hp - 1)
     def increase_hp(self, amount):
         self.hp = min(100, self.hp + amount)
         
@@ -142,11 +141,11 @@ class DesktopPet(QWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
 
-        # --- HP条居中 ---
-        bar_width = 200
+        # --- HP条居中并短一点 ---
+        bar_width = 120
         bar_height = 8
         bar_x = (self.width() - bar_width) // 2
-        bar_y = 10
+        bar_y = 20  # 适当下移，或根据宠物y调整
 
         # --- HP条颜色 ---
         hp = self.state.hp
@@ -161,12 +160,20 @@ class DesktopPet(QWidget):
 
         painter.setBrush(color)
         painter.setPen(Qt.NoPen)
-        painter.drawRect(10,10, int(bar_width * (hp / 100)), 8)
+        painter.drawRect(bar_x, bar_y, int(bar_width * (hp / 100)), bar_height)
 
-        # 绘制宠物动画
+        # 给HP条加一个灰色边框
+        painter.setBrush(Qt.NoBrush)
+        painter.setPen(QColor(80, 80, 80, 200))  # 灰色，带透明度
+        painter.drawRect(bar_x, bar_y, bar_width, bar_height)
+
+        # 绘制更大的宠物动画
         if self.movie.state() == QMovie.Running:
             current = self.movie.currentPixmap()
-            painter.drawPixmap(0, 20, current.scaled(200, 180))
+            pet_width, pet_height = 240, 220
+            x = (self.width() - pet_width) // 2
+            y = 30
+            painter.drawPixmap(x, y, current.scaled(pet_width, pet_height, Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
@@ -208,7 +215,7 @@ class DesktopPet(QWidget):
 
     # --- 新增：心情与动画切换 ---
     def update_pet_animation(self):
-        if self.is_sleeping:
+        if self.is_sleeping or self.state.hp > 80:
             self.set_movie("pet/sleep.gif")
         elif self.state.hp > 60:
             self.set_movie("pet/happy.gif")
